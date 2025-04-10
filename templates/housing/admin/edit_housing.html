@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+
+{% block title %}编辑房源 - {{ housing.name }} - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>编辑房源</h1>
+            <a href="{{ url_for('housing.admin') }}" class="btn btn-outline-secondary">返回房源列表</a>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="{{ url_for('housing.edit_housing', id=housing.id) }}">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">房源名称 *</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ housing.name }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">地址 *</label>
+                        <input type="text" class="form-control" id="address" name="address" value="{{ housing.address }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="type" class="form-label">类型</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="apartment" {% if housing.type == 'apartment' %}selected{% endif %}>公寓</option>
+                            <option value="dormitory" {% if housing.type == 'dormitory' %}selected{% endif %}>宿舍</option>
+                            <option value="house" {% if housing.type == 'house' %}selected{% endif %}>独栋住宅</option>
+                            <option value="other" {% if housing.type == 'other' %}selected{% endif %}>其他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="area" class="form-label">面积 (平方米)</label>
+                            <input type="number" step="0.01" class="form-control" id="area" name="area" value="{{ housing.area or '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="floor" class="form-label">楼层</label>
+                            <input type="number" class="form-control" id="floor" name="floor" value="{{ housing.floor or '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="rooms" class="form-label">房间数</label>
+                            <input type="number" class="form-control" id="rooms" name="rooms" value="{{ housing.rooms or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="price" class="form-label">价格 (元/月) *</label>
+                            <input type="number" step="0.01" class="form-control" id="price" name="price" value="{{ housing.price }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="deposit" class="form-label">押金 (元)</label>
+                            <input type="number" step="0.01" class="form-control" id="deposit" name="deposit" value="{{ housing.deposit or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="is_furnished" name="is_furnished" {% if housing.is_furnished %}checked{% endif %}>
+                        <label class="form-check-label" for="is_furnished">有家具</label>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="facilities" class="form-label">设施</label>
+                        <input type="text" class="form-control" id="facilities" name="facilities" placeholder="例如：空调、冰箱、洗衣机、热水器..." value="{{ housing.facilities or '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="5">{{ housing.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">状态</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="available" {% if housing.status == 'available' %}selected{% endif %}>可租</option>
+                            <option value="occupied" {% if housing.status == 'occupied' %}selected{% endif %}>已租</option>
+                            <option value="maintenance" {% if housing.status == 'maintenance' %}selected{% endif %}>维修中</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">更新房源</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

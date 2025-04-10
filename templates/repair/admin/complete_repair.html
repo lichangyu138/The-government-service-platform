@@ -1,0 +1,46 @@
+{% extends 'layout.html' %}
+
+{% block title %}完成维修{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">完成维修</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">报修请求：{{ request.title }}</h5>
+                    <p class="text-muted">
+                        <strong>报修类别:</strong> {{ request.category.name }}<br>
+                        <strong>报修位置:</strong> {{ request.location }}<br>
+                        <strong>申请人:</strong> {{ request.user.username }}<br>
+                        <strong>申请时间:</strong> {{ request.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                        <strong>开始处理:</strong> {{ request.in_progress_at.strftime('%Y-%m-%d %H:%M') if request.in_progress_at else 'N/A' }}
+                    </p>
+                    
+                    <div class="alert alert-warning">
+                        <p class="mb-0">您正在将该报修请求的状态从<strong>处理中</strong>更改为<strong>已完成</strong>。</p>
+                        <p class="mb-0 mt-2">这表示维修工作已完成，用户将可以对此次维修服务进行评价。</p>
+                        <p class="mb-0 mt-2"><strong>请确保维修工作已完全完成后再进行此操作。</strong></p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <form method="POST" action="{{ url_for('repair.admin_complete_repair', id=request.id) }}">
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('repair.request_detail', id=request.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回详情
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check"></i> 确认完成维修
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

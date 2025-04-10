@@ -1,0 +1,83 @@
+{% extends "layout.html" %}
+
+{% block title %}编辑租房合同 - {{ contract.contract_number }} - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>编辑租房合同</h1>
+            <a href="{{ url_for('housing.manage_contracts') }}" class="btn btn-outline-secondary">返回合同列表</a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">合同信息</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>合同编号：</strong> {{ contract.contract_number }}</p>
+                <p><strong>创建时间：</strong> {{ contract.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                <p><strong>申请ID：</strong> {{ contract.application_id }}</p>
+                <p><strong>租户：</strong> {{ contract.application.user.username }}</p>
+                <p><strong>房源：</strong> {{ contract.application.housing.name }} ({{ contract.application.housing.address }})</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">更新合同</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('housing.edit_contract', id=contract.id) }}">
+                    {{ form.csrf_token }}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">开始日期 *</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ contract.start_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">结束日期 *</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ contract.end_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="monthly_payment" class="form-label">月租金 (元) *</label>
+                            <input type="number" step="0.01" class="form-control" id="monthly_payment" name="monthly_payment" value="{{ contract.monthly_payment }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="payment_day" class="form-label">每月付款日 *</label>
+                            <input type="number" min="1" max="31" class="form-control" id="payment_day" name="payment_day" value="{{ contract.payment_day }}" required>
+                            <div class="form-text">每个月的几号交租（1-31之间）</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">合同状态 *</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="active" {% if contract.status == 'active' %}selected{% endif %}>有效</option>
+                            <option value="expired" {% if contract.status == 'expired' %}selected{% endif %}>已过期</option>
+                            <option value="terminated" {% if contract.status == 'terminated' %}selected{% endif %}>已终止</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ contract.notes or '' }}</textarea>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>注意：</strong> 如果将合同状态更改为"已过期"或"已终止"，相关房源的状态将自动更新为"可租"。
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">更新合同</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

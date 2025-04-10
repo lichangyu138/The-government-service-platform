@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}餐厅服务 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">餐厅服务</h1>
+        
+        <div class="mb-4">
+            <p class="lead">欢迎使用餐厅预订服务，您可以在这里查看可用的餐厅并进行预订。</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('restaurant.my_reservations') }}" class="btn btn-primary">我的餐厅预订</a>
+            {% endif %}
+        </div>
+        
+        {% if restaurants %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for restaurant in restaurants %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ restaurant.name }}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{ restaurant.location }}</h6>
+                                <p class="card-text">{{ restaurant.description|truncate(100) }}</p>
+                                <p class="card-text"><small class="text-muted">营业时间: {{ restaurant.opening_hours }}</small></p>
+                                <a href="{{ url_for('restaurant.detail', id=restaurant.id) }}" class="btn btn-outline-primary">查看详情</a>
+                                {% if current_user.is_authenticated %}
+                                    <a href="{{ url_for('restaurant.reserve', id=restaurant.id) }}" class="btn btn-success ms-2">预订</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                当前没有可用的餐厅信息。
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

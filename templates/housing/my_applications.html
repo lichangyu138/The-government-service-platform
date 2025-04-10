@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+
+{% block title %}我的租房申请 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>我的租房申请</h1>
+            <a href="{{ url_for('housing.index') }}" class="btn btn-primary">浏览可租房源</a>
+        </div>
+        
+        {% if applications %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>申请ID</th>
+                                    <th>房源名称</th>
+                                    <th>申请日期</th>
+                                    <th>开始日期</th>
+                                    <th>结束日期</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in applications %}
+                                    <tr>
+                                        <td>{{ application.id }}</td>
+                                        <td>
+                                            <a href="{{ url_for('housing.detail', id=application.housing.id) }}">{{ application.housing.name }}</a>
+                                        </td>
+                                        <td>{{ application.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ application.start_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ application.end_date.strftime('%Y-%m-%d') if application.end_date else '无限期' }}</td>
+                                        <td>
+                                            {% if application.status == 'pending' %}
+                                                <span class="badge bg-warning">待处理</span>
+                                            {% elif application.status == 'approved' %}
+                                                <span class="badge bg-success">已批准</span>
+                                            {% elif application.status == 'rejected' %}
+                                                <span class="badge bg-danger">已拒绝</span>
+                                            {% elif application.status == 'canceled' %}
+                                                <span class="badge bg-secondary">已取消</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if application.status == 'pending' %}
+                                                <form method="post" action="{{ url_for('housing.cancel_application', id=application.id) }}" class="d-inline" onsubmit="return confirm('确定要取消申请吗？');">
+                                                    {{ form.csrf_token }}
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">取消申请</button>
+                                                </form>
+                                            {% elif application.status == 'approved' %}
+                                                <a href="{{ url_for('housing.my_contracts') }}" class="btn btn-sm btn-outline-primary">查看合同</a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p class="mb-0">您还没有提交过租房申请。</p>
+                <p class="mb-0">请浏览可租房源并提交申请。</p>
+            </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('housing.my_contracts') }}" class="btn btn-outline-primary">查看我的合同</a>
+            <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-secondary ms-2">返回仪表板</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

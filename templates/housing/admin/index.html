@@ -1,0 +1,77 @@
+{% extends "layout.html" %}
+
+{% block title %}房源管理 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>房源管理</h1>
+            <a href="{{ url_for('housing.add_housing') }}" class="btn btn-primary">添加房源</a>
+        </div>
+        
+        {% if housing_list %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>地址</th>
+                            <th>类型</th>
+                            <th>价格</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for housing in housing_list %}
+                            <tr>
+                                <td>{{ housing.id }}</td>
+                                <td>{{ housing.name }}</td>
+                                <td>{{ housing.address }}</td>
+                                <td>
+                                    {% if housing.type == 'apartment' %}公寓
+                                    {% elif housing.type == 'dormitory' %}宿舍
+                                    {% elif housing.type == 'house' %}独栋住宅
+                                    {% else %}{{ housing.type }}{% endif %}
+                                </td>
+                                <td>¥{{ "%.2f"|format(housing.price) }}/月</td>
+                                <td>
+                                    {% if housing.status == 'available' %}
+                                        <span class="badge bg-success">可租</span>
+                                    {% elif housing.status == 'occupied' %}
+                                        <span class="badge bg-danger">已租</span>
+                                    {% elif housing.status == 'maintenance' %}
+                                        <span class="badge bg-warning">维修中</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ housing.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ housing.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('housing.edit_housing', id=housing.id) }}" class="btn btn-outline-primary">编辑</a>
+                                        <a href="{{ url_for('housing.manage_photos', housing_id=housing.id) }}" class="btn btn-outline-info">照片</a>
+                                        <a href="{{ url_for('housing.detail', id=housing.id) }}" class="btn btn-outline-secondary">查看</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                暂无房源数据。请点击"添加房源"按钮创建第一个房源。
+            </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('housing.manage_applications') }}" class="btn btn-primary me-2">管理租房申请</a>
+            <a href="{{ url_for('housing.manage_contracts') }}" class="btn btn-outline-primary">管理租房合同</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

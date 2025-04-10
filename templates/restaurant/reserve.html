@@ -1,0 +1,74 @@
+{% extends "layout.html" %}
+
+{% block title %}预订 {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h1 class="mb-4">预订餐厅</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">{{ restaurant.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>位置：</strong> {{ restaurant.location }}</p>
+                <p class="mb-2"><strong>营业时间：</strong> {{ restaurant.opening_hours }}</p>
+                <p class="mb-0"><strong>容量：</strong> {{ restaurant.capacity }} 人</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">填写预订信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" onsubmit="return validateForm('reservationForm')">
+                    <div class="mb-3">
+                        <label for="date" class="form-label">日期</label>
+                        <input type="date" class="form-control" id="date" name="date" required min="{{ now.strftime('%Y-%m-%d') }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="time" class="form-label">时间</label>
+                        <input type="time" class="form-control" id="time" name="time" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="party_size" class="form-label">人数</label>
+                        <select class="form-select" id="party_size" name="party_size" required>
+                            {% for i in range(1, 11) %}
+                                <option value="{{ i }}">{{ i }} 人</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注（可选）</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="有什么特殊要求可以在这里说明..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">提交预订</button>
+                        <a href="{{ url_for('restaurant.detail', id=restaurant.id) }}" class="btn btn-outline-secondary">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 设置当前日期为默认值
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const dateInput = document.getElementById('date');
+        dateInput.value = today.toISOString().split('T')[0];
+        
+        // 设置默认时间为中午12点
+        document.getElementById('time').value = '12:00';
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block title %}我的仪表板 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                个人信息
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar-circle">
+                        <span class="initials">{{ current_user.username[0]|upper }}</span>
+                    </div>
+                </div>
+                <h5 class="card-title text-center">{{ current_user.username }}</h5>
+                <p class="card-text text-muted text-center">{{ current_user.email }}</p>
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-primary">查看个人资料</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="list-group mb-4">
+            <a href="{{ url_for('restaurant.my_reservations') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                我的餐厅预订
+                <span class="badge bg-primary rounded-pill">0</span>
+            </a>
+            <a href="{{ url_for('shuttle.my_reservations') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                我的班车预订
+                <span class="badge bg-primary rounded-pill">0</span>
+            </a>
+            <a href="{{ url_for('housing.my_applications') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                我的租房申请
+                <span class="badge bg-primary rounded-pill">0</span>
+            </a>
+            <a href="{{ url_for('housing.my_contracts') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                我的租房合同
+                <span class="badge bg-primary rounded-pill">0</span>
+            </a>
+            <a href="{{ url_for('repair.my_requests') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                我的报修请求
+                <span class="badge bg-primary rounded-pill">0</span>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <h3 class="mb-4">服务概览</h3>
+        
+        <div class="row row-cols-1 row-cols-md-2 g-4 mb-4">
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">餐厅服务</h5>
+                        <p class="card-text">浏览可用餐厅，查看菜单和预订餐位。</p>
+                        <a href="{{ url_for('restaurant.index') }}" class="btn btn-primary">前往餐厅</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">班车服务</h5>
+                        <p class="card-text">查询班车路线、时刻表，在线预订座位。</p>
+                        <a href="{{ url_for('shuttle.index') }}" class="btn btn-primary">前往班车</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">租房服务</h5>
+                        <p class="card-text">浏览可用房源，申请租赁，管理租房合同。</p>
+                        <a href="{{ url_for('housing.index') }}" class="btn btn-primary">前往租房</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">物品报修</h5>
+                        <p class="card-text">在线提交报修申请，跟踪维修进度。</p>
+                        <a href="{{ url_for('repair.index') }}" class="btn btn-primary">前往报修</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3 class="mb-3">最近活动</h3>
+        <div class="list-group">
+            <div class="list-group-item text-center text-muted py-5">
+                暂无最近活动
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .avatar-circle {
+        width: 80px;
+        height: 80px;
+        background-color: #007bff;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin: 0 auto;
+    }
+
+    .initials {
+        position: relative;
+        top: 20px;
+        font-size: 40px;
+        line-height: 40px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %} 

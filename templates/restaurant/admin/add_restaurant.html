@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}添加餐厅 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>添加餐厅</h1>
+            <a href="{{ url_for('restaurant.admin') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> 返回餐厅管理
+            </a>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">餐厅信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('restaurant.add_restaurant') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">餐厅名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="location" class="form-label">位置 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="location" name="location" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="capacity" class="form-label">容量</label>
+                        <input type="number" class="form-control" id="capacity" name="capacity" min="0">
+                        <div class="form-text">餐厅可容纳的最大人数</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="opening_hours" class="form-label">营业时间</label>
+                        <input type="text" class="form-control" id="opening_hours" name="opening_hours" placeholder="例如：周一至周五 10:00-20:00，周末 11:00-22:00">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="请输入餐厅描述、特色菜系等信息..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加餐厅
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

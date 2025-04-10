@@ -1,0 +1,246 @@
+{% extends "layout.html" %}
+
+{% block title %}报修分类管理 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>报修分类管理</h1>
+        <a href="{{ url_for('repair.admin') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回报修管理
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-md-7">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">现有分类</h5>
+                </div>
+                <div class="card-body">
+                    {% if categories %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="5%">ID</th>
+                                    <th width="30%">名称</th>
+                                    <th width="45%">描述</th>
+                                    <th width="20%">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                <tr>
+                                    <td>{{ category.id }}</td>
+                                    <td>{{ category.name }}</td>
+                                    <td>{{ category.description }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary edit-category" 
+                                                data-id="{{ category.id }}"
+                                                data-name="{{ category.name }}"
+                                                data-description="{{ category.description }}">
+                                            <i class="fas fa-edit"></i> 编辑
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal-{{ category.id }}">
+                                            <i class="bi bi-trash-fill"></i> 删除
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- 删除确认模态框 -->
+                                <div class="modal fade" id="deleteModal-{{ category.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel-{{ category.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteModalLabel-{{ category.id }}">确认删除</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                您确定要删除分类 <strong>{{ category.name }}</strong> 吗？此操作无法撤销。
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                                                <form action="{{ url_for('repair.delete_category', id=category.id) }}" method="post">
+                                                    <button type="submit" class="btn btn-danger">确认删除</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 暂无报修分类，请添加。
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0" id="form-title">添加分类</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('repair.add_category') }}" id="category-form">
+                        {{ form.csrf_token }}
+                        <input type="hidden" name="category_id" id="category_id">
+                        
+                        <div class="mb-3">
+                            <label for="name" class="form-label">分类名称 <span class="text-danger">*</span></label>
+                            {{ form.name(class="form-control", placeholder="请输入分类名称") }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">分类描述</label>
+                            {{ form.description(class="form-control", placeholder="请输入分类描述") }}
+                            {% if form.description.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary" id="save-btn">
+                                <i class="fas fa-save"></i> 保存
+                            </button>
+                            <button type="button" class="btn btn-secondary d-none" id="cancel-btn">
+                                <i class="fas fa-times"></i> 取消
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                确定要删除分类 <span id="category-name" class="fw-bold"></span> 吗？此操作不可恢复。
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form method="POST" id="delete-form">
+                    {{ form.csrf_token }}
+                    <input type="hidden" name="category_id" id="delete_category_id">
+                    <button type="submit" class="btn btn-danger">确认删除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 编辑分类
+        const editButtons = document.querySelectorAll('.edit-category');
+        const categoryForm = document.getElementById('category-form');
+        const formTitle = document.getElementById('form-title');
+        const saveBtn = document.getElementById('save-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const categoryIdInput = document.getElementById('category_id');
+        const nameInput = document.getElementById('name');
+        const descriptionInput = document.getElementById('description');
+        
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                const description = this.getAttribute('data-description');
+                
+                // 更改表单标题和操作
+                formTitle.textContent = '编辑分类';
+                saveBtn.innerHTML = '<i class="fas fa-save"></i> 更新';
+                cancelBtn.classList.remove('d-none');
+                
+                // 填充表单数据
+                categoryIdInput.value = id;
+                nameInput.value = name;
+                descriptionInput.value = description;
+                
+                // 更改表单提交地址 - 使用模板字符串构建URL
+                categoryForm.action = `/repair/admin/categories/edit/${id}`;
+                
+                // 滚动到表单区域
+                document.querySelector('.col-md-5 .card').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+        
+        // 取消编辑按钮
+        cancelBtn.addEventListener('click', function() {
+            resetForm();
+        });
+        
+        // 删除分类
+        const deleteButtons = document.querySelectorAll('.delete-category');
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const categoryNameSpan = document.getElementById('category-name');
+        const deleteCategoryIdInput = document.getElementById('delete_category_id');
+        const deleteForm = document.getElementById('delete-form');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const id = this.getAttribute('data-id');
+                const name = this.getAttribute('data-name');
+                
+                categoryNameSpan.textContent = name;
+                deleteCategoryIdInput.value = id;
+                
+                // 设置删除表单的action
+                deleteForm.action = `/repair/admin/categories/delete/${id}`;
+                
+                deleteModal.show();
+            });
+        });
+        
+        // 重置表单
+        function resetForm() {
+            formTitle.textContent = '添加分类';
+            saveBtn.innerHTML = '<i class="fas fa-save"></i> 保存';
+            cancelBtn.classList.add('d-none');
+            
+            categoryIdInput.value = '';
+            categoryForm.reset();
+            
+            categoryForm.action = "{{ url_for('repair.add_category') }}";
+        }
+    });
+</script>
+{% endblock %} 

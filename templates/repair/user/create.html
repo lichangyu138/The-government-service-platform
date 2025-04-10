@@ -1,0 +1,239 @@
+{% extends "layout.html" %}
+
+{% block title %}提交报修申请 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>提交报修申请</h1>
+        <a href="{{ url_for('repair.user_index') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回我的报修
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('repair.create_request') }}" enctype="multipart/form-data">
+                {{ form.csrf_token }}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="category_id" class="form-label">报修类别 <span class="text-danger">*</span></label>
+                        {{ form.category_id(class="form-select" + (" is-invalid" if form.category_id.errors else "")) }}
+                        {% if form.category_id.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.category_id.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div id="categoryDescription" class="form-text text-muted mt-2"></div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <label for="title" class="form-label">标题 <span class="text-danger">*</span></label>
+                        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="简要描述问题") }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">问题描述 <span class="text-danger">*</span></label>
+                    {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=5, placeholder="请详细描述问题的具体情况，如发生时间、现象等") }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.description.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="location" class="form-label">具体位置 <span class="text-danger">*</span></label>
+                    {{ form.location(class="form-control" + (" is-invalid" if form.location.errors else ""), placeholder="例如：3号楼2层202室") }}
+                    {% if form.location.errors %}
+                        <div class="invalid-feedback">
+                            {% for error in form.location.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-4">
+                    <label for="images" class="form-label">上传图片（可选，最多3张）</label>
+                    <div class="mb-2">
+                        {{ form.images(class="form-control" + (" is-invalid" if form.images.errors else ""), multiple=true, accept="image/*") }}
+                        {% if form.images.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.images.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="form-text">支持JPG、PNG格式，每张不超过5MB</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="imagePreviewContainer" class="d-flex flex-wrap gap-2 mt-2">
+                        <!-- 预览图片将在这里显示 -->
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">联系方式</label>
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>姓名：</strong>{{ current_user.name }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>电话：</strong>{{ current_user.phone }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane me-2"></i> 提交报修申请
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 类别描述显示
+        const categorySelect = document.getElementById('category_id');
+        const categoryDescriptionDiv = document.getElementById('categoryDescription');
+        const categories = {{ categories_json|safe }};
+        
+        function updateCategoryDescription() {
+            const selectedCategoryId = categorySelect.value;
+            if (selectedCategoryId) {
+                const category = categories.find(cat => cat.id.toString() === selectedCategoryId);
+                if (category && category.description) {
+                    categoryDescriptionDiv.textContent = category.description;
+                } else {
+                    categoryDescriptionDiv.textContent = '';
+                }
+            } else {
+                categoryDescriptionDiv.textContent = '';
+            }
+        }
+        
+        categorySelect.addEventListener('change', updateCategoryDescription);
+        updateCategoryDescription(); // 初始加载
+        
+        // 图片预览
+        const imageInput = document.getElementById('images');
+        const previewContainer = document.getElementById('imagePreviewContainer');
+        
+        imageInput.addEventListener('change', function() {
+            // 清空预览区域
+            previewContainer.innerHTML = '';
+            
+            // 检查是否选择了文件
+            if (this.files.length === 0) {
+                return;
+            }
+            
+            // 限制最多3张图片
+            const maxFiles = 3;
+            if (this.files.length > maxFiles) {
+                alert(`最多只能上传${maxFiles}张图片`);
+                this.value = '';
+                return;
+            }
+            
+            // 检查文件大小和类型
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            
+            let invalidFiles = [];
+            
+            for (let i = 0; i < this.files.length; i++) {
+                const file = this.files[i];
+                
+                if (file.size > maxSize) {
+                    invalidFiles.push(`${file.name} (超过5MB)`);
+                    continue;
+                }
+                
+                if (!validTypes.includes(file.type)) {
+                    invalidFiles.push(`${file.name} (格式不支持)`);
+                    continue;
+                }
+                
+                // 创建预览
+                const preview = document.createElement('div');
+                preview.className = 'position-relative';
+                
+                const img = document.createElement('img');
+                img.className = 'img-thumbnail';
+                img.style.width = '120px';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'btn btn-sm btn-danger position-absolute top-0 end-0';
+                removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                removeBtn.type = 'button';
+                removeBtn.style.borderRadius = '0 3px 0 3px';
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                
+                preview.appendChild(img);
+                preview.appendChild(removeBtn);
+                previewContainer.appendChild(preview);
+                
+                // 删除按钮功能（由于FileList对象是只读的，此处只能重置整个input）
+                removeBtn.addEventListener('click', function() {
+                    previewContainer.removeChild(preview);
+                    
+                    // 如果没有预览图片了，清空input
+                    if (previewContainer.children.length === 0) {
+                        imageInput.value = '';
+                    }
+                });
+            }
+            
+            // 显示无效文件警告
+            if (invalidFiles.length > 0) {
+                alert(`以下文件无法上传:\n${invalidFiles.join('\n')}`);
+                this.value = '';
+                previewContainer.innerHTML = '';
+            }
+        });
+    });
+</script>
+{% endblock %} 

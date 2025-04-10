@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block title %}预订班车 - {{ route.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <h1 class="mb-4">预订班车</h1>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">路线信息</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0"><strong>路线名称：</strong> {{ route.name }}</p>
+                <p class="mb-0"><strong>起点：</strong> {{ route.start_location }}</p>
+                <p class="mb-0"><strong>终点：</strong> {{ route.end_location }}</p>
+                {% if route.stops %}
+                    <p class="mb-0"><strong>途经站点：</strong> {{ route.stops }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">班次信息</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0"><strong>发车时间：</strong> {{ schedule.departure_time }}</p>
+                <p class="mb-0"><strong>到达时间：</strong> {{ schedule.arrival_time }}</p>
+                <p class="mb-0">
+                    <strong>运行日期：</strong>
+                    {% set days = {
+                        '1': '周一',
+                        '2': '周二',
+                        '3': '周三',
+                        '4': '周四',
+                        '5': '周五',
+                        '6': '周六',
+                        '7': '周日'
+                    } %}
+                    
+                    {% set schedule_days = schedule.days_of_week.split(',') %}
+                    {% for day in schedule_days %}
+                        {{ days[day] }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+                {% if schedule.vehicle_info %}
+                    <p class="mb-0"><strong>车辆信息：</strong> {{ schedule.vehicle_info }}</p>
+                {% endif %}
+                {% if schedule.capacity %}
+                    <p class="mb-0"><strong>座位容量：</strong> {{ schedule.capacity }} 人</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">填写预订信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="reservationForm" onsubmit="return validateForm('reservationForm')">
+                    {{ form.csrf_token }}
+                    <div class="mb-3">
+                        <label for="date" class="form-label">预订日期</label>
+                        <input type="date" class="form-control" id="date" name="date" required min="{{ now.strftime('%Y-%m-%d') }}">
+                        <div class="form-text">请选择您想要乘坐班车的日期</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注（可选）</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="有什么特殊要求可以在这里说明..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">提交预订</button>
+                        <a href="{{ url_for('shuttle.route_detail', id=route.id) }}" class="btn btn-outline-secondary">取消</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 设置当前日期为默认值
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date();
+        const dateInput = document.getElementById('date');
+        dateInput.value = today.toISOString().split('T')[0];
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block title %}班车时刻表管理 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>班车时刻表管理</h1>
+        <a href="{{ url_for('shuttle.admin') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回班车管理
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">路线信息</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>路线名称:</strong> {{ route.name }}</p>
+                    <p><strong>起点:</strong> {{ route.start_location }}</p>
+                    <p><strong>终点:</strong> {{ route.end_location }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>途经站点:</strong> {{ route.stops }}</p>
+                    <p><strong>状态:</strong> 
+                        {% if route.status == 'active' %}
+                            <span class="badge bg-success">启用</span>
+                        {% else %}
+                            <span class="badge bg-secondary">停用</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">时刻列表</h5>
+            <a href="{{ url_for('shuttle.add_schedule', route_id=route.id) }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> 添加时刻
+            </a>
+        </div>
+        <div class="card-body">
+            {% if schedules %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>发车时间</th>
+                            <th>到达时间</th>
+                            <th>运行日期</th>
+                            <th>座位容量</th>
+                            <th>车辆信息</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td>{{ schedule.departure_time }}</td>
+                            <td>{{ schedule.arrival_time }}</td>
+                            <td>
+                                {% set days = schedule.days_of_week.split(',') %}
+                                {% for day in days %}
+                                    {% if day == '0' %}
+                                        <span class="badge bg-info">周日</span>
+                                    {% elif day == '1' %}
+                                        <span class="badge bg-primary">周一</span>
+                                    {% elif day == '2' %}
+                                        <span class="badge bg-primary">周二</span>
+                                    {% elif day == '3' %}
+                                        <span class="badge bg-primary">周三</span>
+                                    {% elif day == '4' %}
+                                        <span class="badge bg-primary">周四</span>
+                                    {% elif day == '5' %}
+                                        <span class="badge bg-primary">周五</span>
+                                    {% elif day == '6' %}
+                                        <span class="badge bg-info">周六</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ schedule.capacity }}</td>
+                            <td>{{ schedule.vehicle_info }}</td>
+                            <td>
+                                {% if schedule.status == 'active' %}
+                                    <span class="badge bg-success">启用</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">停用</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('shuttle.edit_schedule', id=schedule.id) }}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i> 编辑
+                                    </a>
+                                    <a href="{{ url_for('shuttle.view_reservations', schedule_id=schedule.id) }}" class="btn btn-outline-info">
+                                        <i class="fas fa-calendar-check"></i> 预订
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 该路线尚未添加任何时刻表，请点击"添加时刻"按钮添加。
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

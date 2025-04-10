@@ -1,0 +1,156 @@
+{% extends "layout.html" %}
+
+{% block title %}我的报修 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>我的报修</h1>
+        <a href="{{ url_for('repair.create_request') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> 提交新申请
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <ul class="nav nav-tabs card-header-tabs" id="requestTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                        处理中 <span class="badge bg-primary ms-1">{{ pending_requests|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                        已完成 <span class="badge bg-success ms-1">{{ completed_requests|length }}</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-0">
+            <div class="tab-content" id="requestTabContent">
+                <!-- 处理中的报修 -->
+                <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                    {% if pending_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">报修单号</th>
+                                        <th scope="col">类别</th>
+                                        <th scope="col">标题</th>
+                                        <th scope="col">提交时间</th>
+                                        <th scope="col">当前状态</th>
+                                        <th scope="col">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in pending_requests %}
+                                        <tr>
+                                            <td>{{ request.id }}</td>
+                                            <td>{{ request.category.name }}</td>
+                                            <td>{{ request.title }}</td>
+                                            <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>
+                                                {% if request.status == 'pending' %}
+                                                    <span class="badge bg-warning">待处理</span>
+                                                {% elif request.status == 'processing' %}
+                                                    <span class="badge bg-info">处理中</span>
+                                                {% elif request.status == 'waiting_feedback' %}
+                                                    <span class="badge bg-primary">待反馈</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('repair.view_request', request_id=request.id) }}" class="btn btn-sm btn-outline-primary">
+                                                    查看详情
+                                                </a>
+                                                {% if request.status == 'waiting_feedback' %}
+                                                    <a href="{{ url_for('repair.submit_feedback', request_id=request.id) }}" class="btn btn-sm btn-success ms-1">
+                                                        提交反馈
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <img src="{{ url_for('static', filename='images/no_data.svg') }}" alt="暂无数据" style="width:120px; opacity:0.5;" class="mb-3">
+                            <p class="text-muted">暂无处理中的报修申请</p>
+                            <a href="{{ url_for('repair.create_request') }}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-1"></i> 提交新申请
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 已完成的报修 -->
+                <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                    {% if completed_requests %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th scope="col">报修单号</th>
+                                        <th scope="col">类别</th>
+                                        <th scope="col">标题</th>
+                                        <th scope="col">提交时间</th>
+                                        <th scope="col">完成时间</th>
+                                        <th scope="col">评分</th>
+                                        <th scope="col">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for request in completed_requests %}
+                                        <tr>
+                                            <td>{{ request.id }}</td>
+                                            <td>{{ request.category.name }}</td>
+                                            <td>{{ request.title }}</td>
+                                            <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                            <td>{{ request.completed_at.strftime('%Y-%m-%d %H:%M') if request.completed_at else 'N/A' }}</td>
+                                            <td>
+                                                {% if request.rating %}
+                                                    <div class="text-warning">
+                                                        {% for i in range(request.rating) %}
+                                                            <i class="fas fa-star"></i>
+                                                        {% endfor %}
+                                                        {% for i in range(5 - request.rating) %}
+                                                            <i class="far fa-star"></i>
+                                                        {% endfor %}
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">未评价</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{{ url_for('repair.view_request', request_id=request.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <img src="{{ url_for('static', filename='images/no_data.svg') }}" alt="暂无数据" style="width:120px; opacity:0.5;" class="mb-3">
+                            <p class="text-muted">暂无已完成的报修申请</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

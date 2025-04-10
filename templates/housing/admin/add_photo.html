@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+
+{% block title %}添加照片 - {{ housing.name }} - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>添加房源照片</h1>
+            <a href="{{ url_for('housing.manage_photos', housing_id=housing.id) }}" class="btn btn-outline-secondary">返回照片列表</a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">房源信息</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0"><strong>名称：</strong> {{ housing.name }}</p>
+                <p class="mb-0"><strong>地址：</strong> {{ housing.address }}</p>
+                <p class="mb-0"><strong>价格：</strong> ¥{{ "%.2f"|format(housing.price) }}/月</p>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">上传照片</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('housing.add_photo', housing_id=housing.id) }}" enctype="multipart/form-data">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">选择照片 *</label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+                        <div class="form-text">支持的格式：JPG, JPEG, PNG, GIF。最大文件大小：5MB。</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">照片描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="对照片的简短描述..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">上传照片</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

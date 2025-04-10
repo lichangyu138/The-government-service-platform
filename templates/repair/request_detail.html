@@ -1,0 +1,283 @@
+{% extends 'layout.html' %}
+
+{% block title %}报修详情{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">报修详情</h4>
+                    <span class="badge {% if request.status == 'pending' %}bg-warning{% elif request.status == 'assigned' %}bg-info{% elif request.status == 'in_progress' %}bg-primary{% elif request.status == 'completed' %}bg-success{% else %}bg-secondary{% endif %}">
+                        {% if request.status == 'pending' %}待处理
+                        {% elif request.status == 'assigned' %}已分配
+                        {% elif request.status == 'in_progress' %}处理中
+                        {% elif request.status == 'completed' %}已完成
+                        {% else %}已取消
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ request.title }}</h5>
+                    <div class="mb-3">
+                        <span class="badge bg-secondary">{{ request.category.name }}</span>
+                        <small class="text-muted ms-2">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h6 class="card-subtitle mb-2 text-muted">详细描述</h6>
+                            <p class="card-text">{{ request.description }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <p><strong>位置：</strong> {{ request.location }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>申请人：</strong> {{ request.user.username }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if request.photos %}
+                    <div class="mb-4">
+                        <h6 class="text-muted mb-2">报修图片</h6>
+                        <div class="row">
+                            {% for photo in request.photos %}
+                            <div class="col-md-4 mb-3">
+                                <a href="{{ photo.image_url }}" target="_blank">
+                                    <img src="{{ photo.image_url }}" class="img-thumbnail" alt="报修图片">
+                                </a>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('repair.my_requests') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 返回列表
+                        </a>
+                        
+                        {% if request.user_id == current_user.id and request.status in ['pending', 'assigned'] %}
+                        <form method="POST" action="{{ url_for('repair.cancel_request', id=request.id) }}" onsubmit="return confirm('确定要取消此报修请求吗？');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-times"></i> 取消报修
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        {% if request.user_id == current_user.id and request.status == 'completed' and not feedback %}
+                        <a href="{{ url_for('repair.submit_feedback', request_id=request.id) }}" class="btn btn-primary">
+                            <i class="fas fa-star"></i> 提交反馈
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if assignments %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">处理进度</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="timeline p-4">
+                        {% for assignment in assignments %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">
+                                    {% if loop.first %}
+                                    分配给维修人员: {{ assignment.staff.user.username }}
+                                    {% else %}
+                                    重新分配给: {{ assignment.staff.user.username }}
+                                    {% endif %}
+                                </h6>
+                                <p class="timeline-subtitle">
+                                    {{ assignment.assigned_at.strftime('%Y-%m-%d %H:%M') }}
+                                    <br>
+                                    {% if assignment.note %}
+                                    <small>备注: {{ assignment.note }}</small>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if request.status == 'in_progress' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">开始处理</h6>
+                                <p class="timeline-subtitle">
+                                    {{ request.in_progress_at.strftime('%Y-%m-%d %H:%M') if request.in_progress_at else 'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if request.status == 'completed' %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">开始处理</h6>
+                                <p class="timeline-subtitle">
+                                    {{ request.in_progress_at.strftime('%Y-%m-%d %H:%M') if request.in_progress_at else 'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">维修完成</h6>
+                                <p class="timeline-subtitle">
+                                    {{ request.completed_at.strftime('%Y-%m-%d %H:%M') if request.completed_at else 'N/A' }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            {% if feedback %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">用户反馈</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <div class="rating-display">
+                            {% for i in range(5) %}
+                                {% if i < feedback.rating %}
+                                <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="mt-2 mb-0"><strong>{{ feedback.rating }}/5 星</strong></p>
+                        <small class="text-muted">{{ feedback.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                    </div>
+                    
+                    {% if feedback.comment %}
+                    <hr>
+                    <div class="feedback-comment">
+                        <p class="card-text">{{ feedback.comment }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if current_user.is_admin() %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">管理操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% if request.status == 'pending' %}
+                        <a href="{{ url_for('repair.admin_assign_staff', id=request.id) }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-plus"></i> 分配维修人员
+                        </a>
+                        {% endif %}
+                        
+                        {% if request.status == 'assigned' %}
+                        <form method="POST" action="{{ url_for('repair.admin_start_repair', id=request.id) }}" class="mb-2">
+                            <button type="submit" class="list-group-item list-group-item-action w-100 text-start border">
+                                <i class="fas fa-play"></i> 开始维修
+                            </button>
+                        </form>
+                        <a href="{{ url_for('repair.admin_reassign_staff', id=request.id) }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-exchange-alt"></i> 重新分配
+                        </a>
+                        {% endif %}
+                        
+                        {% if request.status == 'in_progress' %}
+                        <form method="POST" action="{{ url_for('repair.admin_complete_repair', id=request.id) }}" class="mb-2">
+                            <button type="submit" class="list-group-item list-group-item-action w-100 text-start border">
+                                <i class="fas fa-check"></i> 标记为已完成
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('repair.admin_add_note', id=request.id) }}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-sticky-note"></i> 添加处理备注
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background-color: #17a2b8;
+        left: -30px;
+        top: 5px;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 2px #eee;
+        z-index: 100;
+    }
+    
+    .timeline-marker.bg-primary {
+        background-color: #0d6efd;
+    }
+    
+    .timeline-marker.bg-success {
+        background-color: #198754;
+    }
+    
+    .timeline-content {
+        padding-bottom: 15px;
+        border-bottom: 1px dashed #ddd;
+        position: relative;
+    }
+    
+    .timeline::after {
+        content: '';
+        position: absolute;
+        width: 2px;
+        background-color: #eee;
+        top: 0;
+        bottom: 0;
+        left: 8px;
+        margin-left: -8px;
+    }
+    
+    .timeline-item:last-child .timeline-content {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .rating-display {
+        font-size: 1.5rem;
+        letter-spacing: 0.3rem;
+    }
+</style>
+{% endblock %} 

@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block title %}菜单管理 - {{ restaurant.name }} - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>{{ restaurant.name }} - 菜单管理</h1>
+            <div>
+                <a href="{{ url_for('restaurant.admin') }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-arrow-left"></i> 返回餐厅管理
+                </a>
+                <a href="{{ url_for('restaurant.add_menu', restaurant_id=restaurant.id) }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 添加菜品
+                </a>
+            </div>
+        </div>
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">菜单列表</h5>
+            </div>
+            <div class="card-body p-0">
+                {% if menus %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>名称</th>
+                                    <th>分类</th>
+                                    <th>价格</th>
+                                    <th>状态</th>
+                                    <th>描述</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for menu in menus %}
+                                    <tr>
+                                        <td>{{ menu.name }}</td>
+                                        <td>{{ menu.category or '-' }}</td>
+                                        <td>¥{{ "%.2f"|format(menu.price) }}</td>
+                                        <td>
+                                            {% if menu.available %}
+                                                <span class="badge bg-success">可供应</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">已下架</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ menu.description|truncate(50) or '-' }}</td>
+                                        <td>
+                                            <a href="{{ url_for('restaurant.edit_menu', id=menu.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> 编辑
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-0">暂无菜单数据，请添加菜品。</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('restaurant.manage_reservations', restaurant_id=restaurant.id) }}" class="btn btn-outline-primary">
+                <i class="fas fa-calendar-check"></i> 管理预订
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

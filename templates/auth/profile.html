@@ -1,0 +1,114 @@
+{% extends "layout.html" %}
+
+{% block title %}个人资料 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="my-0">个人资料</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center mb-4">
+                        <div class="avatar-circle mb-3">
+                            <span class="initials">{{ current_user.username[0]|upper }}</span>
+                        </div>
+                        <h5>{{ current_user.username }}</h5>
+                        <p class="text-muted">{{ current_user.role }}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="mb-3">
+                            <label class="form-label">用户名</label>
+                            <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">电子邮箱</label>
+                            <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">注册时间</label>
+                            <input type="text" class="form-control" value="{{ current_user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}" readonly>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-primary">编辑资料</a>
+                            <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-secondary">修改密码</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h4 class="mb-3">我的活动</h4>
+        <ul class="nav nav-tabs mb-3" id="profileTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="reservations-tab" data-bs-toggle="tab" data-bs-target="#reservations" type="button" role="tab" aria-controls="reservations" aria-selected="true">餐厅预订</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="shuttle-tab" data-bs-toggle="tab" data-bs-target="#shuttle" type="button" role="tab" aria-controls="shuttle" aria-selected="false">班车预订</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="housing-tab" data-bs-toggle="tab" data-bs-target="#housing" type="button" role="tab" aria-controls="housing" aria-selected="false">租房申请</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="repair-tab" data-bs-toggle="tab" data-bs-target="#repair" type="button" role="tab" aria-controls="repair" aria-selected="false">报修请求</button>
+            </li>
+        </ul>
+        <div class="tab-content" id="profileTabsContent">
+            <div class="tab-pane fade show active" id="reservations" role="tabpanel" aria-labelledby="reservations-tab">
+                <div class="list-group">
+                    <div class="list-group-item text-center text-muted py-4">
+                        暂无餐厅预订记录
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="shuttle" role="tabpanel" aria-labelledby="shuttle-tab">
+                <div class="list-group">
+                    <div class="list-group-item text-center text-muted py-4">
+                        暂无班车预订记录
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="housing" role="tabpanel" aria-labelledby="housing-tab">
+                <div class="list-group">
+                    <div class="list-group-item text-center text-muted py-4">
+                        暂无租房申请记录
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="repair" role="tabpanel" aria-labelledby="repair-tab">
+                <div class="list-group">
+                    <div class="list-group-item text-center text-muted py-4">
+                        暂无报修请求记录
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .avatar-circle {
+        width: 100px;
+        height: 100px;
+        background-color: #007bff;
+        text-align: center;
+        border-radius: 50%;
+        -webkit-border-radius: 50%;
+        -moz-border-radius: 50%;
+        margin: 0 auto;
+    }
+
+    .initials {
+        position: relative;
+        top: 25px;
+        font-size: 50px;
+        line-height: 50px;
+        color: #fff;
+        font-weight: bold;
+    }
+</style>
+{% endblock %} 

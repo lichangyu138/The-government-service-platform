@@ -1,0 +1,142 @@
+{% extends "layout.html" %}
+
+{% block title %}编辑班车时刻 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>编辑班车时刻</h1>
+        <a href="{{ url_for('shuttle.manage_schedule', route_id=route.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回时刻表管理
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">路线信息</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>路线名称:</strong> {{ route.name }}</p>
+                    <p><strong>起点:</strong> {{ route.start_location }}</p>
+                    <p><strong>终点:</strong> {{ route.end_location }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>途经站点:</strong> {{ route.stops }}</p>
+                    <p><strong>状态:</strong> 
+                        {% if route.status == 'active' %}
+                            <span class="badge bg-success">启用</span>
+                        {% else %}
+                            <span class="badge bg-secondary">停用</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">编辑时刻</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('shuttle.edit_schedule', id=schedule.id) }}">
+                {{ form.csrf_token if form }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="departure_time" class="form-label">发车时间 <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" id="departure_time" name="departure_time" 
+                               value="{{ schedule.departure_time }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="arrival_time" class="form-label">到达时间 <span class="text-danger">*</span></label>
+                        <input type="time" class="form-control" id="arrival_time" name="arrival_time"
+                               value="{{ schedule.arrival_time }}" required>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">运行日期 <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap">
+                        {% set days = schedule.days_of_week.split(',') %}
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="0" id="sunday"
+                                   {% if '0' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="sunday">星期日</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="1" id="monday"
+                                   {% if '1' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="monday">星期一</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="2" id="tuesday"
+                                   {% if '2' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="tuesday">星期二</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="3" id="wednesday"
+                                   {% if '3' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="wednesday">星期三</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="4" id="thursday"
+                                   {% if '4' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="thursday">星期四</label>
+                        </div>
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="5" id="friday"
+                                   {% if '5' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="friday">星期五</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="days_of_week" value="6" id="saturday"
+                                   {% if '6' in days %}checked{% endif %}>
+                            <label class="form-check-label" for="saturday">星期六</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="capacity" class="form-label">座位容量</label>
+                        <input type="number" class="form-control" id="capacity" name="capacity" min="0" 
+                               value="{{ schedule.capacity }}" placeholder="例如：40">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="vehicle_info" class="form-label">车辆信息</label>
+                        <input type="text" class="form-control" id="vehicle_info" name="vehicle_info"
+                               value="{{ schedule.vehicle_info }}" placeholder="例如：中型巴士">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">状态</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="active" {% if schedule.status == 'active' %}selected{% endif %}>启用</option>
+                            <option value="inactive" {% if schedule.status == 'inactive' %}selected{% endif %}>停用</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存修改
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

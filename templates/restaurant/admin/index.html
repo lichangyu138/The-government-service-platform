@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}餐厅管理 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>餐厅管理</h1>
+            <a href="{{ url_for('restaurant.add_restaurant') }}" class="btn btn-primary">添加餐厅</a>
+        </div>
+        
+        {% if restaurants %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>位置</th>
+                            <th>容量</th>
+                            <th>状态</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for restaurant in restaurants %}
+                            <tr>
+                                <td>{{ restaurant.id }}</td>
+                                <td>{{ restaurant.name }}</td>
+                                <td>{{ restaurant.location }}</td>
+                                <td>{{ restaurant.capacity }}</td>
+                                <td>
+                                    {% if restaurant.status == 'active' %}
+                                        <span class="badge bg-success">营业中</span>
+                                    {% elif restaurant.status == 'closed' %}
+                                        <span class="badge bg-danger">已关闭</span>
+                                    {% elif restaurant.status == 'renovating' %}
+                                        <span class="badge bg-warning">装修中</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ restaurant.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ restaurant.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{{ url_for('restaurant.edit_restaurant', id=restaurant.id) }}" class="btn btn-outline-primary">编辑</a>
+                                        <a href="{{ url_for('restaurant.manage_menu', restaurant_id=restaurant.id) }}" class="btn btn-outline-info">菜单</a>
+                                        <a href="{{ url_for('restaurant.manage_reservations', restaurant_id=restaurant.id) }}" class="btn btn-outline-warning">预订</a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                暂无餐厅数据。请点击"添加餐厅"按钮创建第一个餐厅。
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block title %}处理租房申请 - ID: {{ application.id }} - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>处理租房申请</h1>
+            <a href="{{ url_for('housing.manage_applications') }}" class="btn btn-outline-secondary">返回申请列表</a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">申请信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>申请ID：</strong> {{ application.id }}</p>
+                        <p><strong>申请人：</strong> {{ application.user.username }}</p>
+                        <p><strong>申请人邮箱：</strong> {{ application.user.email }}</p>
+                        <p><strong>申请时间：</strong> {{ application.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>状态：</strong> 
+                            {% if application.status == 'pending' %}
+                                <span class="badge bg-warning">待处理</span>
+                            {% elif application.status == 'approved' %}
+                                <span class="badge bg-success">已批准</span>
+                            {% elif application.status == 'rejected' %}
+                                <span class="badge bg-danger">已拒绝</span>
+                            {% elif application.status == 'canceled' %}
+                                <span class="badge bg-secondary">已取消</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>开始日期：</strong> {{ application.start_date.strftime('%Y-%m-%d') }}</p>
+                        <p><strong>结束日期：</strong> {{ application.end_date.strftime('%Y-%m-%d') if application.end_date else '无限期' }}</p>
+                        <p><strong>居住人数：</strong> {{ application.occupants }} 人</p>
+                        <p><strong>用途：</strong> {{ application.purpose or '未指定' }}</p>
+                        {% if application.notes %}
+                            <p><strong>管理员备注：</strong> {{ application.notes }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">房源信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>房源名称：</strong> {{ application.housing.name }}</p>
+                        <p><strong>地址：</strong> {{ application.housing.address }}</p>
+                        <p><strong>类型：</strong> 
+                            {% if application.housing.type == 'apartment' %}公寓
+                            {% elif application.housing.type == 'dormitory' %}宿舍
+                            {% elif application.housing.type == 'house' %}独栋住宅
+                            {% else %}{{ application.housing.type }}{% endif %}
+                        </p>
+                        <p><strong>状态：</strong> 
+                            {% if application.housing.status == 'available' %}
+                                <span class="badge bg-success">可租</span>
+                            {% elif application.housing.status == 'occupied' %}
+                                <span class="badge bg-danger">已租</span>
+                            {% elif application.housing.status == 'maintenance' %}
+                                <span class="badge bg-warning">维修中</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ application.housing.status }}</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>价格：</strong> ¥{{ "%.2f"|format(application.housing.price) }}/月</p>
+                        <p><strong>押金：</strong> ¥{{ "%.2f"|format(application.housing.deposit) if application.housing.deposit else '无' }}</p>
+                        <p><strong>面积：</strong> {{ application.housing.area }} 平方米</p>
+                        <p><strong>是否有家具：</strong> {{ '是' if application.housing.is_furnished else '否' }}</p>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <a href="{{ url_for('housing.detail', id=application.housing.id) }}" class="btn btn-sm btn-outline-primary" target="_blank">查看完整房源信息</a>
+                </div>
+            </div>
+        </div>
+        
+        {% if application.status == 'pending' %}
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">处理申请</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{{ url_for('housing.process_application', id=application.id) }}">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            <label for="status" class="form-label">决定</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="approved">批准申请</option>
+                                <option value="rejected">拒绝申请</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">备注</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="可选，添加关于此决定的说明..."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <strong>注意：</strong> 批准申请将自动：
+                            <ul class="mb-0">
+                                <li>将房源状态更新为"已租"</li>
+                                <li>创建租房合同</li>
+                                <li>合同开始日期为申请指定的开始日期</li>
+                                <li>如未指定结束日期，合同期限将默认为一年</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">提交处理结果</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

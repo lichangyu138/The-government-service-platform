@@ -1,0 +1,126 @@
+{% extends 'layout.html' %}
+
+{% block title %}提交报修申请 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>提交报修申请</h1>
+                <a href="{{ url_for('repair.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回报修首页
+                </a>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">填写报修信息</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('repair.create_request') }}" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">报修类别 <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="">-- 请选择报修类别 --</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if request.args.get('category_id')|int == category.id %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">请选择最能描述您问题的类别</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="title" class="form-label">报修标题 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" placeholder="简要描述问题" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="description" class="form-label">详细描述 <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="description" name="description" rows="5" placeholder="请详细描述故障或问题情况，以便我们更好地了解和解决问题" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="location" class="form-label">报修位置 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="例如：A栋3楼305室" required>
+                            <div class="form-text">请尽可能详细地描述问题位置</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="contact_phone" class="form-label">联系电话</label>
+                            <input type="tel" class="form-control" id="contact_phone" name="contact_phone" placeholder="方便维修人员联系您">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="preferred_time" class="form-label">期望维修时间</label>
+                            <input type="text" class="form-control" id="preferred_time" name="preferred_time" placeholder="例如：工作日上午9点-11点">
+                            <div class="form-text">请填写您方便维修人员上门的时间段</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="priority" class="form-label">优先级</label>
+                            <select class="form-select" id="priority" name="priority">
+                                <option value="low">低 - 不急，择期维修</option>
+                                <option value="normal" selected>中 - 正常处理</option>
+                                <option value="high">高 - 优先处理</option>
+                                <option value="urgent">紧急 - 需要立即处理</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="photos" class="form-label">故障照片（可选）</label>
+                            <input type="file" class="form-control" id="photos" name="photos" multiple accept="image/*">
+                            <div class="form-text">您可以上传多张照片，帮助我们更好地了解问题（每张不超过5MB）</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="reset" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> 重置
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> 提交报修申请
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 可以在这里添加表单验证等JavaScript代码
+    document.addEventListener('DOMContentLoaded', function() {
+        // 限制文件上传大小
+        document.getElementById('photos').addEventListener('change', function() {
+            const maxFileSize = 5 * 1024 * 1024; // 5MB
+            let files = this.files;
+            
+            for (let i = 0; i < files.length; i++) {
+                if (files[i].size > maxFileSize) {
+                    alert('文件 ' + files[i].name + ' 超过5MB，请选择较小的文件。');
+                    this.value = '';
+                    break;
+                }
+            }
+        });
+    });
+</script>
+{% endblock %} 

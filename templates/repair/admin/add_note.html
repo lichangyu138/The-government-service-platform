@@ -1,0 +1,63 @@
+{% extends 'layout.html' %}
+
+{% block title %}添加维修备注{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">添加维修备注</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">报修请求：{{ request.title }}</h5>
+                    <p class="text-muted">
+                        <strong>报修类别:</strong> {{ request.category.name }}<br>
+                        <strong>报修位置:</strong> {{ request.location }}<br>
+                        <strong>申请人:</strong> {{ request.user.username }}<br>
+                        <strong>当前状态:</strong> 
+                        {% if request.status == 'pending' %}待处理
+                        {% elif request.status == 'assigned' %}已分配
+                        {% elif request.status == 'in_progress' %}处理中
+                        {% elif request.status == 'completed' %}已完成
+                        {% else %}已取消
+                        {% endif %}
+                    </p>
+                    
+                    {% if assignment %}
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">当前维修人员</h6>
+                        <p class="mb-0">{{ assignment.staff.user.username }} ({{ assignment.staff.specialty }})</p>
+                        {% if assignment.note %}
+                        <hr>
+                        <h6 class="alert-heading">现有备注</h6>
+                        <p class="mb-0">{{ assignment.note }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <form method="POST" action="{{ url_for('repair.admin_add_note', id=request.id) }}">
+                        <div class="form-group mb-3">
+                            <label for="note" class="form-label">备注内容</label>
+                            <textarea class="form-control" id="note" name="note" rows="5" 
+                                      placeholder="请输入维修进度、处理情况等相关信息..." required>{{ assignment.note if assignment.note else '' }}</textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('repair.request_detail', id=request.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回详情
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存备注
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

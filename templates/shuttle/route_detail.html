@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ route.name }} - 班车路线详情{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-3">{{ route.name }}</h1>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">路线信息</h5>
+                <ul class="list-unstyled">
+                    <li><strong>起点：</strong> {{ route.start_location }}</li>
+                    <li><strong>终点：</strong> {{ route.end_location }}</li>
+                    {% if route.stops %}
+                        <li><strong>途经站点：</strong> {{ route.stops }}</li>
+                    {% endif %}
+                </ul>
+                {% if route.description %}
+                    <p>{{ route.description }}</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <h2 class="mb-3">班车时刻表</h2>
+        
+        {% if schedules %}
+            <div class="table-responsive mb-4">
+                <table class="table table-striped table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>发车时间</th>
+                            <th>到达时间</th>
+                            <th>运行日期</th>
+                            <th>座位容量</th>
+                            <th>车辆信息</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for schedule in schedules %}
+                            <tr>
+                                <td>{{ schedule.departure_time }}</td>
+                                <td>{{ schedule.arrival_time }}</td>
+                                <td>
+                                    {% set days = {
+                                        '1': '周一',
+                                        '2': '周二',
+                                        '3': '周三',
+                                        '4': '周四',
+                                        '5': '周五',
+                                        '6': '周六',
+                                        '7': '周日'
+                                    } %}
+                                    
+                                    {% set schedule_days = schedule.days_of_week.split(',') %}
+                                    {% for day in schedule_days %}
+                                        {{ days[day] }}{% if not loop.last %}, {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td>{{ schedule.capacity or '无限制' }}</td>
+                                <td>{{ schedule.vehicle_info or '未知' }}</td>
+                                <td>
+                                    {% if current_user.is_authenticated %}
+                                        <a href="{{ url_for('shuttle.reserve', schedule_id=schedule.id) }}" class="btn btn-sm btn-success">预订</a>
+                                    {% else %}
+                                        <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-outline-primary">登录后预订</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info mb-4">
+                当前没有可用的班车时刻。
+            </div>
+        {% endif %}
+        
+        <a href="{{ url_for('shuttle.index') }}" class="btn btn-outline-secondary">返回班车路线列表</a>
+    </div>
+</div>
+{% endblock %} 

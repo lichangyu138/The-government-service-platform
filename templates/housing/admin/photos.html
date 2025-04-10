@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}房源照片管理 - {{ housing.name }} - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>房源照片管理</h1>
+            <div>
+                <a href="{{ url_for('housing.add_photo', housing_id=housing.id) }}" class="btn btn-primary">添加照片</a>
+                <a href="{{ url_for('housing.admin') }}" class="btn btn-outline-secondary ms-2">返回房源列表</a>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">房源信息</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0"><strong>名称：</strong> {{ housing.name }}</p>
+                <p class="mb-0"><strong>地址：</strong> {{ housing.address }}</p>
+                <p class="mb-0"><strong>价格：</strong> ¥{{ "%.2f"|format(housing.price) }}/月</p>
+            </div>
+        </div>
+        
+        {% if housing.photos %}
+            <div class="row">
+                {% for photo in housing.photos %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card">
+                            <img src="{{ url_for('static', filename=photo.file_path) }}" class="card-img-top" alt="{{ photo.description or housing.name }}">
+                            <div class="card-body">
+                                <p class="card-text">{{ photo.description or '无描述' }}</p>
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">上传于 {{ photo.created_at.strftime('%Y-%m-%d') }}</small>
+                                    <form method="post" action="{{ url_for('housing.delete_photo', id=photo.id) }}" onsubmit="return confirm('确定要删除这张照片吗？');">
+                                        {{ form.csrf_token }}
+                                        <button type="submit" class="btn btn-sm btn-danger">删除</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                该房源还没有照片。请点击"添加照片"按钮上传第一张照片。
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

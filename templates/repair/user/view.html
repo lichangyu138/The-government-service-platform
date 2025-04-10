@@ -1,0 +1,259 @@
+{% extends "layout.html" %}
+
+{% block title %}报修详情 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('repair.index') }}">我的报修</a></li>
+            <li class="breadcrumb-item active" aria-current="page">报修详情 #{{ request.id }}</li>
+        </ol>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+            <h5 class="mb-0">{{ request.title }}</h5>
+            <div>
+                {% if request.status == 'pending' %}
+                    <span class="badge bg-warning">待处理</span>
+                {% elif request.status == 'processing' %}
+                    <span class="badge bg-info">处理中</span>
+                {% elif request.status == 'waiting_feedback' %}
+                    <span class="badge bg-primary">待反馈</span>
+                {% elif request.status == 'completed' %}
+                    <span class="badge bg-success">已完成</span>
+                {% elif request.status == 'cancelled' %}
+                    <span class="badge bg-secondary">已取消</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- 申请详情 -->
+                    <h6 class="text-muted mb-3">报修信息</h6>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">报修类别：</div>
+                        <div class="col-md-8">{{ request.category.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">报修位置：</div>
+                        <div class="col-md-8">{{ request.location }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 text-muted">问题描述：</div>
+                        <div class="col-md-8">{{ request.description|nl2br }}</div>
+                    </div>
+                    
+                    {% if request.images %}
+                    <div class="row mb-4">
+                        <div class="col-md-4 text-muted">报修图片：</div>
+                        <div class="col-md-8">
+                            <div class="row g-2">
+                                {% for image in request.images %}
+                                <div class="col-md-4">
+                                    <a href="{{ url_for('static', filename='uploads/' + image.filename) }}" target="_blank" class="d-block">
+                                        <img src="{{ url_for('static', filename='uploads/' + image.filename) }}" class="img-thumbnail" alt="报修图片">
+                                    </a>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <hr>
+                    
+                    <!-- 处理状态 -->
+                    <h6 class="text-muted mb-3">处理进度</h6>
+                    <div class="position-relative repair-timeline mb-4">
+                        {% for event in request.events|sort(attribute='created_at', reverse=True) %}
+                        <div class="repair-timeline-item pb-4">
+                            <div class="repair-timeline-marker"></div>
+                            <div class="repair-timeline-content ps-4">
+                                <h6 class="mb-1">{{ event.title }}</h6>
+                                <p class="text-muted small mb-1">{{ event.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                {% if event.description %}
+                                <p class="mb-0">{{ event.description|nl2br }}</p>
+                                {% endif %}
+                                {% if event.operator %}
+                                <p class="text-muted small mb-0">处理人: {{ event.operator.name }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- 报修创建事件 -->
+                        <div class="repair-timeline-item">
+                            <div class="repair-timeline-marker"></div>
+                            <div class="repair-timeline-content ps-4">
+                                <h6 class="mb-1">提交报修申请</h6>
+                                <p class="text-muted small mb-0">{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if request.status == 'waiting_feedback' %}
+                    <div class="alert alert-primary">
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <h6 class="mb-1">您的报修已处理完成，请确认并提交反馈</h6>
+                                <p class="mb-0">如果您满意处理结果，请点击"确认完成"并提交评价；如果还有问题，请点击"问题未解决"。</p>
+                            </div>
+                            <div class="ms-auto">
+                                <a href="{{ url_for('repair.submit_feedback', request_id=request.id) }}" class="btn btn-primary">提交反馈</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if request.feedback %}
+                    <hr>
+                    <h6 class="text-muted mb-3">用户反馈</h6>
+                    <div class="mb-3">
+                        <div class="text-warning mb-2">
+                            {% for i in range(request.rating) %}
+                                <i class="fas fa-star"></i>
+                            {% endfor %}
+                            {% for i in range(5 - request.rating) %}
+                                <i class="far fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <p>{{ request.feedback|nl2br }}</p>
+                        <p class="text-muted small">提交于 {{ request.feedback_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if request.status == 'pending' and not request.is_assigned %}
+                    <div class="mt-4">
+                        <a href="{{ url_for('repair.cancel_request', request_id=request.id) }}" class="btn btn-outline-danger" 
+                           onclick="return confirm('确定要取消此报修申请吗？')">
+                            取消申请
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-4">
+                    <!-- 基本信息卡片 -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">基本信息</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <small class="text-muted d-block">报修单号</small>
+                                <div>{{ request.id }}</div>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted d-block">提交时间</small>
+                                <div>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                            {% if request.completed_at %}
+                            <div class="mb-2">
+                                <small class="text-muted d-block">完成时间</small>
+                                <div>{{ request.completed_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                            </div>
+                            {% endif %}
+                            <div class="mb-0">
+                                <small class="text-muted d-block">联系方式</small>
+                                <div>{{ request.user.name }} - {{ request.user.phone }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if request.assigned_to %}
+                    <!-- 维修人员信息 -->
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">维修人员</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <div class="avatar avatar-lg">
+                                        <span class="avatar-text rounded-circle bg-primary">
+                                            {{ request.assigned_to.name[0] }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">{{ request.assigned_to.name }}</h6>
+                                    <p class="small text-muted mb-0">
+                                        <i class="fas fa-phone-alt me-1"></i> {{ request.assigned_to.phone }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+.repair-timeline {
+    border-left: 2px solid #dee2e6;
+    padding-left: 20px;
+    margin-left: 10px;
+}
+
+.repair-timeline-item {
+    position: relative;
+    padding-bottom: 25px;
+}
+
+.repair-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.repair-timeline-marker {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #3498db;
+    border: 2px solid #fff;
+    left: -28px;
+    top: 4px;
+}
+
+.repair-timeline-content {
+    margin-left: 10px;
+}
+
+.avatar-lg {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-text {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #fff;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ housing.name }} - 房屋详情{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-3">{{ housing.name }}</h1>
+        <p class="lead mb-4">{{ housing.address }}</p>
+        
+        {% if housing.photos %}
+            <div class="mb-4">
+                <div id="housingCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for photo in housing.photos %}
+                            <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                <img src="{{ url_for('static', filename=photo.file_path) }}" class="d-block w-100" alt="{{ housing.name }}">
+                                {% if photo.description %}
+                                    <div class="carousel-caption d-none d-md-block">
+                                        <p>{{ photo.description }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#housingCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#housingCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">房源描述</h5>
+            </div>
+            <div class="card-body">
+                {% if housing.description %}
+                    <p>{{ housing.description }}</p>
+                {% else %}
+                    <p class="text-muted">暂无详细描述</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">设施设备</h5>
+            </div>
+            <div class="card-body">
+                {% if housing.facilities %}
+                    <div class="row">
+                        {% for facility in housing.facilities.split(',') %}
+                            <div class="col-md-4 col-6 mb-2">
+                                <i class="bi bi-check-circle-fill text-success me-2"></i>{{ facility.strip() }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="text-muted">暂无设施信息</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if current_user.is_authenticated %}
+            <div class="d-grid gap-2 mb-4">
+                <a href="{{ url_for('housing.apply', id=housing.id) }}" class="btn btn-primary btn-lg">申请租房</a>
+            </div>
+        {% else %}
+            <div class="alert alert-info mb-4">
+                <a href="{{ url_for('auth.login') }}">登录</a> 后即可申请租房。
+            </div>
+        {% endif %}
+        
+        <a href="{{ url_for('housing.index') }}" class="btn btn-outline-secondary mb-4">返回房源列表</a>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <strong>价格：</strong> 
+                        <span class="text-danger">¥{{ "%.2f"|format(housing.price) }}</span>/月
+                    </li>
+                    {% if housing.deposit %}
+                        <li class="mb-2">
+                            <strong>押金：</strong> 
+                            <span>¥{{ "%.2f"|format(housing.deposit) }}</span>
+                        </li>
+                    {% endif %}
+                    <li class="mb-2">
+                        <strong>房屋类型：</strong> 
+                        {% if housing.type == 'apartment' %}公寓
+                        {% elif housing.type == 'dormitory' %}宿舍
+                        {% elif housing.type == 'house' %}独栋住宅
+                        {% else %}{{ housing.type }}{% endif %}
+                    </li>
+                    {% if housing.area %}
+                        <li class="mb-2"><strong>面积：</strong> {{ housing.area }}㎡</li>
+                    {% endif %}
+                    {% if housing.rooms %}
+                        <li class="mb-2"><strong>房间数：</strong> {{ housing.rooms }}室</li>
+                    {% endif %}
+                    {% if housing.floor %}
+                        <li class="mb-2"><strong>楼层：</strong> {{ housing.floor }}层</li>
+                    {% endif %}
+                    <li class="mb-2">
+                        <strong>家具：</strong> 
+                        {% if housing.is_furnished %}带家具{% else %}不带家具{% endif %}
+                    </li>
+                    <li class="mb-2">
+                        <strong>状态：</strong>
+                        {% if housing.status == 'available' %}
+                            <span class="badge bg-success">可租</span>
+                        {% elif housing.status == 'occupied' %}
+                            <span class="badge bg-danger">已租</span>
+                        {% elif housing.status == 'maintenance' %}
+                            <span class="badge bg-warning">维修中</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ housing.status }}</span>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

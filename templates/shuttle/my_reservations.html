@@ -1,0 +1,68 @@
+{% extends "layout.html" %}
+
+{% block title %}我的班车预订{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">我的班车预订</h1>
+        
+        <div class="mb-3">
+            <a href="{{ url_for('shuttle.index') }}" class="btn btn-outline-primary">浏览班车路线</a>
+        </div>
+        
+        {% if reservations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>路线</th>
+                            <th>发车时间</th>
+                            <th>到达时间</th>
+                            <th>预订日期</th>
+                            <th>状态</th>
+                            <th>备注</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('shuttle.route_detail', id=reservation.schedule.route_id) }}">
+                                        {{ reservation.schedule.route.name }}
+                                    </a>
+                                </td>
+                                <td>{{ reservation.schedule.departure_time }}</td>
+                                <td>{{ reservation.schedule.arrival_time }}</td>
+                                <td>{{ reservation.reservation_date.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if reservation.status == 'confirmed' %}
+                                        <span class="badge bg-success">已确认</span>
+                                    {% elif reservation.status == 'canceled' %}
+                                        <span class="badge bg-danger">已取消</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ reservation.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reservation.notes or '-' }}</td>
+                                <td>
+                                    {% if reservation.status == 'confirmed' and reservation.reservation_date >= now.date() %}
+                                        <form method="post" action="{{ url_for('shuttle.cancel_reservation', id=reservation.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要取消此预订吗？')">取消</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                您目前没有任何班车预订。
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

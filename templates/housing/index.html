@@ -1,0 +1,126 @@
+{% extends "layout.html" %}
+
+{% block title %}租房服务 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">租房服务</h1>
+        
+        <div class="mb-4">
+            <p class="lead">欢迎使用租房服务，您可以在这里查看可用的房源并提交申请。</p>
+            {% if current_user.is_authenticated %}
+                <div class="btn-group mb-3">
+                    <a href="{{ url_for('housing.my_applications') }}" class="btn btn-primary">我的租房申请</a>
+                    <a href="{{ url_for('housing.my_contracts') }}" class="btn btn-outline-primary">我的合同</a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">筛选条件</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="filterForm" method="get">
+                            <div class="mb-3">
+                                <label for="type" class="form-label">房屋类型</label>
+                                <select class="form-select" id="type" name="type">
+                                    <option value="">全部</option>
+                                    <option value="apartment">公寓</option>
+                                    <option value="dormitory">宿舍</option>
+                                    <option value="house">独栋住宅</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="priceRange" class="form-label">价格范围</label>
+                                <select class="form-select" id="priceRange" name="price_range">
+                                    <option value="">全部</option>
+                                    <option value="0-2000">2000元以下</option>
+                                    <option value="2000-5000">2000-5000元</option>
+                                    <option value="5000-10000">5000-10000元</option>
+                                    <option value="10000+">10000元以上</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="isFurnished" name="is_furnished" value="1">
+                                    <label class="form-check-label" for="isFurnished">
+                                        仅显示带家具的房源
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">筛选</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                {% if housing_list %}
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        {% for housing in housing_list %}
+                            <div class="col">
+                                <div class="card h-100">
+                                    {% if housing.photos %}
+                                        <img src="{{ url_for('static', filename=housing.photos[0].file_path) }}" class="card-img-top" alt="{{ housing.name }}">
+                                    {% else %}
+                                        <div class="card-img-top bg-light text-center py-5">
+                                            <i class="bi bi-house" style="font-size: 48px;"></i>
+                                            <p class="mt-2">暂无图片</p>
+                                        </div>
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ housing.name }}</h5>
+                                        <p class="card-text">
+                                            <small class="text-muted">{{ housing.address }}</small><br>
+                                            <strong class="text-danger">¥{{ "%.2f"|format(housing.price) }}</strong>/月
+                                        </p>
+                                        <p class="card-text">
+                                            {% if housing.type == 'apartment' %}
+                                                <span class="badge bg-info">公寓</span>
+                                            {% elif housing.type == 'dormitory' %}
+                                                <span class="badge bg-secondary">宿舍</span>
+                                            {% elif housing.type == 'house' %}
+                                                <span class="badge bg-success">独栋住宅</span>
+                                            {% else %}
+                                                <span class="badge bg-primary">{{ housing.type }}</span>
+                                            {% endif %}
+                                            
+                                            {% if housing.is_furnished %}
+                                                <span class="badge bg-warning">带家具</span>
+                                            {% endif %}
+                                            
+                                            {% if housing.area %}
+                                                <span class="badge bg-light text-dark">{{ housing.area }}㎡</span>
+                                            {% endif %}
+                                            
+                                            {% if housing.rooms %}
+                                                <span class="badge bg-light text-dark">{{ housing.rooms }}室</span>
+                                            {% endif %}
+                                        </p>
+                                        <div class="mt-3">
+                                            <a href="{{ url_for('housing.detail', id=housing.id) }}" class="btn btn-outline-primary btn-sm">查看详情</a>
+                                            {% if current_user.is_authenticated %}
+                                                <a href="{{ url_for('housing.apply', id=housing.id) }}" class="btn btn-success btn-sm">申请租房</a>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        当前没有符合条件的房源。
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

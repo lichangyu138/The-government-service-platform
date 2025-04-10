@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+
+{% block title %}重新分配维修人员{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">重新分配维修人员</h4>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">报修请求：{{ request.title }}</h5>
+                    <p class="text-muted">
+                        <strong>报修类别:</strong> {{ request.category.name }}<br>
+                        <strong>报修位置:</strong> {{ request.location }}<br>
+                        <strong>申请人:</strong> {{ request.user.username }}<br>
+                        <strong>申请时间:</strong> {{ request.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </p>
+                    
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading">当前维修人员</h6>
+                        <p class="mb-0">{{ current_staff.user.username }} ({{ current_staff.specialty }})</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <form method="POST" action="{{ url_for('repair.admin_reassign_staff', id=request.id) }}">
+                        <div class="form-group mb-3">
+                            <label for="staff_id" class="form-label">新维修人员</label>
+                            <select class="form-select" id="staff_id" name="staff_id" required>
+                                <option value="">-- 请选择新的维修人员 --</option>
+                                {% for s in staff %}
+                                <option value="{{ s.id }}">{{ s.user.username }} ({{ s.specialty }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="note" class="form-label">重新分配原因</label>
+                            <textarea class="form-control" id="note" name="note" rows="3" 
+                                      placeholder="请说明重新分配的原因..." required></textarea>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('repair.request_detail', id=request.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回详情
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-exchange-alt"></i> 重新分配
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

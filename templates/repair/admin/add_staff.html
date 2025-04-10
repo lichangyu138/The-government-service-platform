@@ -1,0 +1,70 @@
+{% extends 'layout.html' %}
+
+{% block title %}添加维修人员{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">添加维修人员</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('repair.add_staff') }}">
+                        {{ form.csrf_token }}
+                        
+                        <div class="form-group mb-3">
+                            <label for="user_id" class="form-label">{{ form.user_id.label }}</label>
+                            {{ form.user_id(class="form-select" + (" is-invalid" if form.user_id.errors else "")) }}
+                            <div class="form-text">选择要成为维修人员的用户账号</div>
+                            {% if form.user_id.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.user_id.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="staff_number" class="form-label">{{ form.staff_number.label }}</label>
+                            {{ form.staff_number(class="form-control" + (" is-invalid" if form.staff_number.errors else ""), placeholder="例如：RPR-001") }}
+                            <div class="form-text">请输入唯一的员工编号，将用于识别此维修人员</div>
+                            {% if form.staff_number.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.staff_number.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="specialty" class="form-label">{{ form.specialty.label }}</label>
+                            {{ form.specialty(class="form-control" + (" is-invalid" if form.specialty.errors else ""), placeholder="例如：水电维修、网络设备维护等") }}
+                            <div class="form-text">可选：请描述此维修人员的专业领域或技能特长</div>
+                            {% if form.specialty.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.specialty.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('repair.manage_staff') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回列表
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,137 @@
+{% extends "layout.html" %}
+
+{% block title %}在线报修 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>在线报修服务</h1>
+                {% if current_user.is_authenticated %}
+                <div>
+                    <a href="{{ url_for('repair.create_request') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 提交报修申请
+                    </a>
+                    <a href="{{ url_for('repair.my_requests') }}" class="btn btn-outline-primary ms-2">
+                        <i class="fas fa-list"></i> 我的报修记录
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">欢迎使用在线报修服务</h5>
+                    <p class="card-text">
+                        通过我们的在线报修系统，您可以随时提交各类设施、设备的维修申请，我们的维修团队将及时响应并处理您的请求。
+                    </p>
+                    <p class="card-text">
+                        请选择下方的报修类别，或直接点击"提交报修申请"按钮开始报修流程。
+                    </p>
+                    {% if not current_user.is_authenticated %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> 您需要先 <a href="{{ url_for('auth.login') }}">登录</a> 才能提交报修申请。
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <h2 class="mb-3">报修类别</h2>
+            
+            {% if categories %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for category in categories %}
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ category.name }}</h5>
+                                    {% if category.description %}
+                                        <p class="card-text">{{ category.description }}</p>
+                                    {% else %}
+                                        <p class="card-text text-muted">暂无描述</p>
+                                    {% endif %}
+                                    {% if current_user.is_authenticated %}
+                                        <a href="{{ url_for('repair.create_request') }}?category_id={{ category.id }}" class="btn btn-outline-primary">
+                                            选择此类别报修
+                                        </a>
+                                    {% else %}
+                                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary">
+                                            登录后报修
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> 暂无报修类别，请联系管理员添加。
+                </div>
+            {% endif %}
+            
+            <div class="mt-5">
+                <h3 class="mb-3">报修流程</h3>
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-primary fs-5">1</span>
+                                </div>
+                                <h5 class="card-title">提交申请</h5>
+                                <p class="card-text">填写报修信息，上传故障照片</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-primary fs-5">2</span>
+                                </div>
+                                <h5 class="card-title">派单处理</h5>
+                                <p class="card-text">管理员审核并分配维修人员</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-primary fs-5">3</span>
+                                </div>
+                                <h5 class="card-title">维修服务</h5>
+                                <p class="card-text">维修人员按约定时间上门维修</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card text-center h-100">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <span class="badge rounded-pill bg-primary fs-5">4</span>
+                                </div>
+                                <h5 class="card-title">完成评价</h5>
+                                <p class="card-text">维修完成后进行满意度评价</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

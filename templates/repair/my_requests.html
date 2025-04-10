@@ -1,0 +1,211 @@
+{% extends "layout.html" %}
+
+{% block title %}我的报修请求 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>我的报修请求</h1>
+                <div>
+                    <a href="{{ url_for('repair.create_request') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 提交新报修
+                    </a>
+                    <a href="{{ url_for('repair.index') }}" class="btn btn-outline-secondary ms-2">
+                        <i class="fas fa-arrow-left"></i> 返回报修首页
+                    </a>
+                </div>
+            </div>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <ul class="nav nav-tabs card-header-tabs" id="requestTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="true">
+                                处理中的请求
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                                已完成的请求
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="canceled-tab" data-bs-toggle="tab" data-bs-target="#canceled" type="button" role="tab" aria-controls="canceled" aria-selected="false">
+                                已取消的请求
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="requestTabContent">
+                        <!-- 处理中的请求 -->
+                        <div class="tab-pane fade show active" id="active" role="tabpanel" aria-labelledby="active-tab">
+                            {% set active_requests = requests|selectattr('status', 'in', ['pending', 'assigned', 'in_progress'])|list %}
+                            {% if active_requests %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>类别</th>
+                                                <th>标题</th>
+                                                <th>位置</th>
+                                                <th>提交时间</th>
+                                                <th>状态</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for request in active_requests %}
+                                                <tr>
+                                                    <td>{{ request.id }}</td>
+                                                    <td>{{ request.category.name }}</td>
+                                                    <td>{{ request.title }}</td>
+                                                    <td>{{ request.location }}</td>
+                                                    <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        {% if request.status == 'pending' %}
+                                                            <span class="badge bg-warning text-dark">待处理</span>
+                                                        {% elif request.status == 'assigned' %}
+                                                            <span class="badge bg-info">已分配</span>
+                                                        {% elif request.status == 'in_progress' %}
+                                                            <span class="badge bg-primary">维修中</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ url_for('repair.request_detail', id=request.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                                        {% if request.status in ['pending', 'assigned'] %}
+                                                            <form method="post" action="{{ url_for('repair.cancel_request', id=request.id) }}" class="d-inline">
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('确定要取消此报修请求吗？')">取消</button>
+                                                            </form>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    您没有正在处理中的报修请求。
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 已完成的请求 -->
+                        <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                            {% set completed_requests = requests|selectattr('status', 'equalto', 'completed')|list %}
+                            {% if completed_requests %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>类别</th>
+                                                <th>标题</th>
+                                                <th>位置</th>
+                                                <th>完成时间</th>
+                                                <th>评价</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for request in completed_requests %}
+                                                <tr>
+                                                    <td>{{ request.id }}</td>
+                                                    <td>{{ request.category.name }}</td>
+                                                    <td>{{ request.title }}</td>
+                                                    <td>{{ request.location }}</td>
+                                                    <td>{{ request.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        {% if request.feedback %}
+                                                            <div class="text-warning">
+                                                                {% for i in range(request.feedback.rating) %}
+                                                                    <i class="fas fa-star"></i>
+                                                                {% endfor %}
+                                                                {% for i in range(5 - request.feedback.rating) %}
+                                                                    <i class="far fa-star"></i>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% else %}
+                                                            <span class="text-muted">未评价</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{{ url_for('repair.request_detail', id=request.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                                        {% if not request.feedback %}
+                                                            <a href="{{ url_for('repair.submit_feedback', request_id=request.id) }}" class="btn btn-sm btn-success">提交评价</a>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    您没有已完成的报修请求。
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 已取消的请求 -->
+                        <div class="tab-pane fade" id="canceled" role="tabpanel" aria-labelledby="canceled-tab">
+                            {% set canceled_requests = requests|selectattr('status', 'equalto', 'canceled')|list %}
+                            {% if canceled_requests %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>类别</th>
+                                                <th>标题</th>
+                                                <th>位置</th>
+                                                <th>提交时间</th>
+                                                <th>取消时间</th>
+                                                <th>操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for request in canceled_requests %}
+                                                <tr>
+                                                    <td>{{ request.id }}</td>
+                                                    <td>{{ request.category.name }}</td>
+                                                    <td>{{ request.title }}</td>
+                                                    <td>{{ request.location }}</td>
+                                                    <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>{{ request.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                                    <td>
+                                                        <a href="{{ url_for('repair.request_detail', id=request.id) }}" class="btn btn-sm btn-outline-primary">查看详情</a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info mb-0">
+                                    您没有已取消的报修请求。
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,78 @@
+{% extends "layout.html" %}
+
+{% block title %}添加班车路线 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>添加班车路线</h1>
+        <a href="{{ url_for('shuttle.admin') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回班车管理
+        </a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">路线信息</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('shuttle.add_route') }}">
+                {{ form.csrf_token if form }}
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">路线名称 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="name" name="name" required placeholder="例如：校园巡回线">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="status" class="form-label">状态</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="active" selected>启用</option>
+                            <option value="inactive">停用</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="start_location" class="form-label">起点 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="start_location" name="start_location" required placeholder="起点位置">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="end_location" class="form-label">终点 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="end_location" name="end_location" required placeholder="终点位置">
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="stops" class="form-label">途经站点</label>
+                    <input type="text" class="form-control" id="stops" name="stops" placeholder="用逗号分隔多个站点，例如：图书馆,食堂,宿舍区">
+                    <div class="form-text">如有多个站点，请用逗号分隔。</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="description" class="form-label">路线描述</label>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="请输入路线描述，如特殊说明等"></textarea>
+                </div>
+                
+                <div class="text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存路线
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

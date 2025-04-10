@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block title %}租房合同管理 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>租房合同管理</h1>
+            <a href="{{ url_for('housing.admin') }}" class="btn btn-outline-secondary">返回房源列表</a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_status == 'active' %}active{% endif %}" href="{{ url_for('housing.manage_contracts', status='active') }}">有效合同</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_status == 'expired' %}active{% endif %}" href="{{ url_for('housing.manage_contracts', status='expired') }}">已过期</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if current_status == 'terminated' %}active{% endif %}" href="{{ url_for('housing.manage_contracts', status='terminated') }}">已终止</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                {% if contracts %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>合同编号</th>
+                                    <th>租户</th>
+                                    <th>房源</th>
+                                    <th>开始日期</th>
+                                    <th>结束日期</th>
+                                    <th>月租金</th>
+                                    <th>缴费日</th>
+                                    <th>创建时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contract in contracts %}
+                                    <tr>
+                                        <td>{{ contract.contract_number }}</td>
+                                        <td>{{ contract.application.user.username }}</td>
+                                        <td>{{ contract.application.housing.name }}</td>
+                                        <td>{{ contract.start_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ contract.end_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>¥{{ "%.2f"|format(contract.monthly_payment) }}</td>
+                                        <td>每月{{ contract.payment_day }}日</td>
+                                        <td>{{ contract.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('housing.edit_contract', id=contract.id) }}" class="btn btn-sm btn-primary">查看/编辑</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        当前没有{{ '有效' if current_status == 'active' else ('已过期' if current_status == 'expired' else '已终止') }}的租房合同。
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('housing.manage_applications') }}" class="btn btn-primary">管理租房申请</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 

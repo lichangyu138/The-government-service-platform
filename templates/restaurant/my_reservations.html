@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block title %}我的餐厅预订{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">我的餐厅预订</h1>
+        
+        <div class="mb-3">
+            <a href="{{ url_for('restaurant.index') }}" class="btn btn-outline-primary">浏览餐厅</a>
+        </div>
+        
+        {% if reservations %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>餐厅</th>
+                            <th>预订时间</th>
+                            <th>人数</th>
+                            <th>状态</th>
+                            <th>备注</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('restaurant.detail', id=reservation.restaurant_id) }}">
+                                        {{ reservation.restaurant.name }}
+                                    </a>
+                                </td>
+                                <td>{{ reservation.reservation_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>{{ reservation.party_size }} 人</td>
+                                <td>
+                                    {% if reservation.status == 'pending' %}
+                                        <span class="badge bg-warning">待确认</span>
+                                    {% elif reservation.status == 'confirmed' %}
+                                        <span class="badge bg-success">已确认</span>
+                                    {% elif reservation.status == 'canceled' %}
+                                        <span class="badge bg-danger">已取消</span>
+                                    {% elif reservation.status == 'completed' %}
+                                        <span class="badge bg-info">已完成</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ reservation.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ reservation.notes or '-' }}</td>
+                                <td>
+                                    {% if reservation.status in ['pending', 'confirmed'] %}
+                                        <form method="post" action="{{ url_for('restaurant.cancel_reservation', id=reservation.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('确定要取消此预订吗？')">取消</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                您目前没有任何餐厅预订。
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

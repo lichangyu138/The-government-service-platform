@@ -1,0 +1,47 @@
+{% extends "layout.html" %}
+
+{% block title %}班车服务 - 行政服务平台{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">班车服务</h1>
+        
+        <div class="mb-4">
+            <p class="lead">欢迎使用班车服务，您可以在这里查看所有班车路线并进行预订。</p>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('shuttle.my_reservations') }}" class="btn btn-primary">我的班车预订</a>
+            {% endif %}
+        </div>
+        
+        {% if routes %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for route in routes %}
+                    <div class="col">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ route.name }}</h5>
+                                <p class="card-text">
+                                    <strong>起点:</strong> {{ route.start_location }}<br>
+                                    <strong>终点:</strong> {{ route.end_location }}
+                                </p>
+                                {% if route.stops %}
+                                    <p class="card-text"><small class="text-muted">途经: {{ route.stops }}</small></p>
+                                {% endif %}
+                                {% if route.description %}
+                                    <p class="card-text">{{ route.description|truncate(100) }}</p>
+                                {% endif %}
+                                <a href="{{ url_for('shuttle.route_detail', id=route.id) }}" class="btn btn-outline-primary">查看详情</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                当前没有可用的班车路线。
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
